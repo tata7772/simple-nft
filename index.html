@@ -2,25 +2,63 @@
 <html>
 <head>
   <title>Simple NFT</title>
-  <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"></script>
+  <script src="https://cdn.ethers.io/lib/ethers-5.7.umd.min.js"></script>
+  <style>
+    body { font-family: Arial; text-align: center; margin-top: 50px; }
+    #mintBtn {
+      padding: 12px 24px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-  <button id="mintButton">Mint NFT</button>
+  <h1>Simple NFT Minting</h1>
+  <button id="mintBtn">Mint NFT</button>
+  <p id="status"></p>
+  
   <script>
     const contractAddress = "0x611b24d5B7df8d4dcE0a3b5aA2e318eCe74e39fa";
-    const abi = [/* ABI вашего контракта */];
-    
-    document.getElementById("mintButton").onclick = async () => {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      await provider.send("eth_requestAccounts", []);
-      const signer = provider.getSigner();
-      const contract = new ethers.Contract(contractAddress, abi, signer);
+    const abi = [
+      "function mint(address to) external",
+      "function balanceOf(address owner) external view returns (uint256)"
+    ];
+
+    document.getElementById("mintBtn").onclick = async () => {
+      const btn = document.getElementById("mintBtn");
+      const status = document.getElementById("status");
       
       try {
+        if (!window.ethereum) {
+          status.textContent = "Error: Please install MetaMask!";
+          return;
+        }
+
+        btn.disabled = true;
+        status.textContent = "Connecting...";
+
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        const signer = provider.getSigner();
+        const contract = new ethers.Contract(contractAddress, abi, signer);
+
+        status.textContent = "Sending transaction...";
         const tx = await contract.mint(await signer.getAddress());
-        alert(`Транзакция отправлена: ${tx.hash}`);
+        
+        status.textContent = `Transaction sent: ${tx.hash}`;
+        await tx.wait();
+        
+        status.textContent = "🎉 NFT minted successfully!";
+        btn.textContent = "Mint Another";
       } catch (error) {
-        alert(`Ошибка: ${error.message}`);
+        status.textContent = `Error: ${error.message}`;
+        console.error(error);
+      } finally {
+        btn.disabled = false;
       }
     };
   </script>
