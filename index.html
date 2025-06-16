@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Simple NFT</title>
+  <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"></script>
+</head>
+<body>
+  <button id="mintButton">Mint NFT</button>
+  <script>
+    const contractAddress = "0x611b24d5B7df8d4dcE0a3b5aA2e318eCe74e39fa";
+    const abi = [/* ABI вашего контракта */];
+    
+    document.getElementById("mintButton").onclick = async () => {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      const signer = provider.getSigner();
+      const contract = new ethers.Contract(contractAddress, abi, signer);
+      
+      try {
+        const tx = await contract.mint(await signer.getAddress());
+        alert(`Транзакция отправлена: ${tx.hash}`);
+      } catch (error) {
+        alert(`Ошибка: ${error.message}`);
+      }
+    };
+  </script>
+</body>
+</html>
